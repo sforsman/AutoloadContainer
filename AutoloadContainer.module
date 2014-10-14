@@ -45,7 +45,7 @@ class AutoloadContainer extends WireData implements Module, ConfigurableModule {
   public function load($module)
   {
     $className = $this->getModuleClass($module);
-    $m = wire('modules')->get($className);
+    $m = $this->modules->get($className);
     $this->loadChildren($className);
     return $m;
   }
