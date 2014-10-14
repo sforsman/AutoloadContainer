@@ -14,7 +14,7 @@ class DummyParent extends WireData implements Module {
 
   public function init()
   {
-    echo "Parent is alive!\n";
+    echo "Parent has been called to action!\n";
     if($this->ac)
     {
       $this->ac->loadChildren($this);
