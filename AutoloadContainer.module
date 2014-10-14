@@ -1,0 +1,119 @@
+<?php
+
+class AutoloadContainer extends WireData implements Module, ConfigurableModule {
+
+  protected $configuration;
+
+  public static function getModuleInfo() {
+    return array(
+      'title' => __('Autoload Container', __FILE__),
+      'version' => 1, 
+      'summary' => 'PoC',
+      'permanent' => false, 
+      'singular' => true, 
+      'autoload' => true
+    );
+  }
+
+  public static function getModuleConfigInputfields(array $data) {
+    $name = 'inputfieldModules';
+
+    if(!isset($data[$name])) $data[$name] = "";
+
+    $fields = new InputfieldWrapper();
+    $modules = Wire::getFuel('modules');
+    $field = $modules->get("InputfieldTextarea");
+    $field->attr('name', $name);
+    $field->attr('value', $data[$name]); 
+    $field->label = __('Module relationships (JSON)', __FILE__);
+    $field->description = __('This shouldn\'t be modified manually. Instead use the attach() and detach() methods.', __FILE__); // Description 
+    $fields->append($field);
+
+    return $fields;
+  }
+
+  public function init()
+  {
+    $this->setFuel('ac', $this);
+
+    if($this->inputfieldModules)
+      $this->configuration = json_decode($this->inputfieldModules,true);
+    else
+      $this->configuration = Array();
+  }
+
+  public function load($module)
+  {
+    $className = $this->getModuleClass($module);
+    $m = wire('modules')->get($className);
+    $this->loadChildren($className);
+    return $m;
+  }
+
+  public function loadChildren($parent)
+  {
+    $className = $this->getModuleClass($parent);
+    if(isset($this->configuration[$className]))
+    {
+      foreach($this->configuration[$className] as $child)
+      {
+        if(!$this->modules->isInstalled($child))
+          continue;
+        if(class_exists($child, false))
+          continue;
+        $this->load($child); 
+      }
+    }
+  }
+
+  public function attach($child, $parent)
+  {
+    $child = $this->getModuleClass($child);
+    $parent = $this->getModuleClass($parent);
+
+    if(!isset($this->configuration[$parent]))
+      $this->configuration[$parent] = Array();
+
+    if(!in_array($child, $this->configuration[$parent], true))
+    {
+      $this->configuration[$parent][] = $child;
+      $this->message(__("Attached {$child} with {$parent}"));
+    }
+
+    $this->updateConfig();
+  }
+
+  public function detach($child, $parent)
+  {
+    $child = $this->getModuleClass($child);
+    $parent = $this->getModuleClass($parent);
+
+    if(!isset($this->configuration[$parent]))
+      $this->configuration[$parent] = Array();
+
+    $key = array_search($child, $this->configuration[$parent], true);
+    if($key !== false)
+    {
+      unset($this->configuration[$parent][$key]);
+      $this->message(__("Detached {$child} from {$parent}"));
+    }
+
+    if(count($this->configuration[$parent]) == 0)
+      unset($this->configuration[$parent]);
+
+    $this->updateConfig();
+  }
+
+  protected function updateConfig()
+  {
+    $inputfieldModules = json_encode($this->configuration);
+    $this->modules->saveModuleConfigData($this, Array('inputfieldModules'=>$inputfieldModules));
+  }
+
+  protected function getModuleClass($mixed)
+  {
+    if(is_string($mixed)) return $mixed;
+    elseif(is_object($mixed)) return $mixed->className();
+    else throw new WireException(__("Unable to determine module class"));
+  }
+}
