@@ -14,7 +14,7 @@ class DummyChild extends WireData implements Module {
 
   public function init()
   {
-    echo "I have been created!\n";
+    echo "Child has been created!\n";
   }
 
   public function ___install()
