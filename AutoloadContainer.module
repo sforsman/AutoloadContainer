@@ -26,7 +26,7 @@ class AutoloadContainer extends WireData implements Module, ConfigurableModule {
     $field->attr('name', $name);
     $field->attr('value', $data[$name]); 
     $field->label = __('Module relationships (JSON)', __FILE__);
-    $field->description = __('This shouldn\'t be modified manually. Instead use the attach() and detach() methods.', __FILE__); // Description 
+    $field->description = __('This shouldn\'t be modified manually. Instead use the attach() and detach() methods.', __FILE__);
     $fields->append($field);
 
     return $fields;
