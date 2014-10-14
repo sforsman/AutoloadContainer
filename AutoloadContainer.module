@@ -42,15 +42,15 @@ class AutoloadContainer extends WireData implements Module, ConfigurableModule {
       $this->configuration = Array();
   }
 
-  public function load($module)
+  public function get($module)
   {
     $className = $this->getModuleClass($module);
     $m = $this->modules->get($className);
-    $this->loadChildren($className);
+    $this->load($className);
     return $m;
   }
 
-  public function loadChildren($parent)
+  public function load($parent)
   {
     $className = $this->getModuleClass($parent);
     if(isset($this->configuration[$className]))
@@ -61,7 +61,7 @@ class AutoloadContainer extends WireData implements Module, ConfigurableModule {
           continue;
         if(class_exists($child, false))
           continue;
-        $this->load($child); 
+        $this->get($child); 
       }
     }
   }
@@ -70,6 +70,9 @@ class AutoloadContainer extends WireData implements Module, ConfigurableModule {
   {
     $child = $this->getModuleClass($child);
     $parent = $this->getModuleClass($parent);
+    
+    if($child == $parent)
+      throw new WireException(__("\$child and \$parent can't be from the same class"))
 
     if(!isset($this->configuration[$parent]))
       $this->configuration[$parent] = Array();
