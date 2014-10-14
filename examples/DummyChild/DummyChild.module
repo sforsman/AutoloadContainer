@@ -1,0 +1,35 @@
+<?php
+
+class DummyChild extends WireData implements Module {
+
+  protected $configuration;
+
+  public static function getModuleInfo() {
+    return array(
+      'title' => __('Dummy Child Module', __FILE__),
+      'version' => 1, 
+      'summary' => 'Just for testing',
+    );
+  }
+
+  public function init()
+  {
+    echo "I have been created!\n";
+  }
+
+  public function ___install()
+  {
+    if($this->ac)
+    {
+      $this->ac->attach($this, "DummyParent");
+    }
+  }
+
+  public function ___uninstall()
+  {
+    if($this->ac)
+    {
+      $this->ac->detach($this, "DummyParent");
+    }
+  }
+}

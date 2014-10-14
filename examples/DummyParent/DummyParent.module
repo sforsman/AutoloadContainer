@@ -1,0 +1,23 @@
+<?php
+
+class DummyParent extends WireData implements Module {
+
+  protected $configuration;
+
+  public static function getModuleInfo() {
+    return array(
+      'title' => __('Dummy Parent Module', __FILE__),
+      'version' => 1, 
+      'summary' => 'Just for testing',
+    );
+  }
+
+  public function init()
+  {
+    echo "Parent is alive!\n";
+    if($this->ac)
+    {
+      $this->ac->loadChildren($this);
+    }
+  }
+}
